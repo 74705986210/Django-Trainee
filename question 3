@@ -1,0 +1,25 @@
+from django.dispatch import Signal
+from django.db import models, transaction
+
+my_signal = Signal()
+
+class MyModel(models.Model):
+    name = models.CharField(max_length=100)
+
+def signal_receiver(sender, **kwargs):
+    MyModel.objects.create(name="From Signal")
+    print("Object created in signal.")
+
+my_signal.connect(signal_receiver)
+
+try:
+    with transaction.atomic():
+        MyModel.objects.create(name="Main Model")
+        print("Object created in main transaction.")
+        my_signal.send(sender=MyModel)
+except Exception as e:
+    print(f"Transaction rolled back: {e}")
+
+print("Objects in database:")
+for obj in MyModel.objects.all():
+    print(obj.name)
