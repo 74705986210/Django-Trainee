@@ -1,0 +1,16 @@
+import threading
+from django.dispatch import Signal
+from django.db import models
+
+my_signal = Signal()
+
+class MyModel(models.Model):
+    name = models.CharField(max_length=100)
+
+def signal_receiver(sender, **kwargs):
+    print(f"Receiver thread: {threading.current_thread().name}")
+
+my_signal.connect(signal_receiver)
+
+print(f"Caller thread: {threading.current_thread().name}")
+my_signal.send(sender=MyModel)
